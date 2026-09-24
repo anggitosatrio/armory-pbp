@@ -263,7 +263,9 @@ class _CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final availability = category.availableItems / category.totalItems;
+    final availability = category.totalItems == 0
+      ? 0.0
+      : category.availableItems / category.totalItems;
 
     return Card(
       clipBehavior: Clip.antiAlias,
