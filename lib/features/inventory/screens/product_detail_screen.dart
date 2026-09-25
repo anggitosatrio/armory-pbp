@@ -8,11 +8,13 @@ import '../models/product.dart';
 class ProductDetailScreen extends StatefulWidget {
   final Product product;
   final Future<Product?> Function()? onEdit;
+  final Future<bool> Function()? onDelete;
 
   const ProductDetailScreen({
     super.key,
     required this.product,
     this.onEdit,
+    this.onDelete,
   });
 
   @override
@@ -27,6 +29,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     super.initState();
     _product = widget.product;
   }
+
+  Future<void> _handleDelete() async {
+  final onDelete = widget.onDelete;
+
+  if (onDelete == null) {
+    return;
+  }
+
+  final deleted = await onDelete();
+
+  if (deleted && mounted) {
+    Navigator.of(context).pop();
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -141,6 +157,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         onPressed: _handleEdit,
         icon: const Icon(Icons.edit_outlined),
         label: const Text('EDIT PRODUCT'),
+      ),
+      const SizedBox(width: AppSpacing.md),
+      OutlinedButton.icon(
+        onPressed: _handleDelete,
+        icon: const Icon(Icons.delete_outline),
+        label: const Text('DELETE PRODUCT'),
       ),
     ],
   );

@@ -60,6 +60,41 @@ class _InventoryScreenState extends State<InventoryScreen> {
   return updatedProduct;
 }
 
+Future<bool> _deleteProduct(Product product) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Delete Product'),
+        content: Text(
+          'Are you sure you want to delete ${product.name}?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(false);
+            },
+            child: const Text('CANCEL'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+            child: const Text('DELETE'),
+          ),
+        ],
+      );
+    },
+  );
+
+  if (confirmed != true) {
+    return false;
+  }
+
+  _controller.deleteProduct(product.id);
+  return true;
+}
+
   bool _isGridView = true;
 
   @override
@@ -372,6 +407,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
       builder: (context) => ProductDetailScreen(
         product: product,
         onEdit: () => _showEditProductDialog(product),
+        onDelete: () => _deleteProduct(product),
       ),
     ),
   );
