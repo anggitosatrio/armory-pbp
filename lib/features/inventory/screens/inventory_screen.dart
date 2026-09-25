@@ -43,6 +43,23 @@ class _InventoryScreenState extends State<InventoryScreen> {
     );
   }
 
+  Future<Product?> _showEditProductDialog(Product product) async {
+  final updatedProduct = await showDialog<Product?>(
+    context: context,
+    builder: (context) {
+      return _EditProductDialog(
+        product: product,
+      );
+    },
+  );
+
+  if (updatedProduct != null) {
+    _controller.updateProduct(updatedProduct);
+  }
+
+  return updatedProduct;
+}
+
   bool _isGridView = true;
 
   @override
@@ -350,12 +367,15 @@ class _InventoryScreenState extends State<InventoryScreen> {
   }
 
   void _openProductDetail(Product product) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => ProductDetailScreen(product: product),
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (context) => ProductDetailScreen(
+        product: product,
+        onEdit: () => _showEditProductDialog(product),
       ),
-    );
-  }
+    ),
+  );
+}
 
   void _resetFilters() {
     _searchController.clear();
@@ -700,6 +720,204 @@ class _AddProductDialogState extends State<_AddProductDialog> {
           child: const Text('CANCEL'),
         ),
         FilledButton(onPressed: _submit, child: const Text('ADD PRODUCT')),
+      ],
+    );
+  }
+}
+
+class _EditProductDialog extends StatefulWidget {
+  final Product product;
+
+  const _EditProductDialog({
+    required this.product,
+  });
+
+  @override
+  State<_EditProductDialog> createState() => _EditProductDialogState();
+}
+
+class _EditProductDialogState extends State<_EditProductDialog> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _manufacturerController;
+  late final TextEditingController _modelController;
+  late final TextEditingController _descriptionController;
+
+  late String _category;
+  late String _status;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _nameController = TextEditingController(
+      text: widget.product.name,
+    );
+
+    _manufacturerController = TextEditingController(
+      text: widget.product.manufacturer,
+    );
+
+    _modelController = TextEditingController(
+      text: widget.product.model,
+    );
+
+    _descriptionController = TextEditingController(
+      text: widget.product.description,
+    );
+
+    _category = widget.product.category;
+    _status = widget.product.status;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _manufacturerController.dispose();
+    _modelController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (_nameController.text.trim().isEmpty ||
+        _manufacturerController.text.trim().isEmpty ||
+        _modelController.text.trim().isEmpty) {
+      return;
+    }
+
+    final updatedProduct = Product(
+      id: widget.product.id,
+      name: _nameController.text.trim(),
+      category: _category,
+      manufacturer: _manufacturerController.text.trim(),
+      model: _modelController.text.trim(),
+      imagePath: widget.product.imagePath,
+      description: _descriptionController.text.trim(),
+      status: _status,
+    );
+
+    Navigator.of(context).pop(updatedProduct);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Edit Product'),
+      content: SingleChildScrollView(
+        child: SizedBox(
+          width: 450,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Product Name',
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+
+              TextField(
+                controller: _manufacturerController,
+                decoration: const InputDecoration(
+                  labelText: 'Manufacturer',
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+
+              TextField(
+                controller: _modelController,
+                decoration: const InputDecoration(
+                  labelText: 'Model',
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+
+              DropdownButtonFormField<String>(
+                initialValue: _category,
+                decoration: const InputDecoration(
+                  labelText: 'Type',
+                ),
+                items: const [
+                  DropdownMenuItem(
+                    value: 'Rifle',
+                    child: Text('Rifle'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Pistol',
+                    child: Text('Pistol'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Sniper Rifle',
+                    child: Text('Sniper Rifle'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Shotgun',
+                    child: Text('Shotgun'),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      _category = value;
+                    });
+                  }
+                },
+              ),
+              const SizedBox(height: AppSpacing.md),
+
+              DropdownButtonFormField<String>(
+                initialValue: _status,
+                decoration: const InputDecoration(
+                  labelText: 'Status',
+                ),
+                items: const [
+                  DropdownMenuItem(
+                    value: 'Available',
+                    child: Text('Available'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Maintenance',
+                    child: Text('Maintenance'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Reserved',
+                    child: Text('Reserved'),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      _status = value;
+                    });
+                  }
+                },
+              ),
+              const SizedBox(height: AppSpacing.md),
+
+              TextField(
+                controller: _descriptionController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  alignLabelWithHint: true,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text('CANCEL'),
+        ),
+        FilledButton(
+          onPressed: _submit,
+          child: const Text('SAVE CHANGES'),
+        ),
       ],
     );
   }

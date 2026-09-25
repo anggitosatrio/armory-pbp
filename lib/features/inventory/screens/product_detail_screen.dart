@@ -5,13 +5,28 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../models/product.dart';
 
-class ProductDetailScreen extends StatelessWidget {
+class ProductDetailScreen extends StatefulWidget {
   final Product product;
+  final Future<Product?> Function()? onEdit;
 
   const ProductDetailScreen({
     super.key,
     required this.product,
+    this.onEdit,
   });
+
+  @override
+  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
+}
+
+class _ProductDetailScreenState extends State<ProductDetailScreen> {
+  late Product _product;
+
+  @override
+  void initState() {
+    super.initState();
+    _product = widget.product;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +94,7 @@ class ProductDetailScreen extends StatelessWidget {
       child: Container(
         color: AppColors.surfaceElevated,
         child: Image.asset(
-          product.imagePath,
+          _product.imagePath,
           fit: BoxFit.contain,
           errorBuilder: (context, error, stackTrace) {
             return const Center(
@@ -101,24 +116,54 @@ class ProductDetailScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          product.name,
+          _product.name,
           style: AppTextStyles.display,
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
-          product.description,
+          _product.description,
           style: AppTextStyles.bodySecondary,
         ),
         const SizedBox(height: AppSpacing.xl),
-        _buildStatus(),
-        const SizedBox(height: AppSpacing.xl),
-        _buildDetailsCard(),
+      _buildStatus(),
+      const SizedBox(height: AppSpacing.lg),
+      _buildActionButtons(),
+      const SizedBox(height: AppSpacing.xl),
+      _buildDetailsCard(),
       ],
     );
   }
 
+  Widget _buildActionButtons() {
+  return Row(
+    children: [
+      FilledButton.icon(
+        onPressed: _handleEdit,
+        icon: const Icon(Icons.edit_outlined),
+        label: const Text('EDIT PRODUCT'),
+      ),
+    ],
+  );
+}
+
+Future<void> _handleEdit() async {
+  final onEdit = widget.onEdit;
+
+  if (onEdit == null) {
+    return;
+  }
+
+  final updatedProduct = await onEdit();
+
+  if (updatedProduct != null && mounted) {
+    setState(() {
+      _product = updatedProduct;
+    });
+  }
+}
+
   Widget _buildStatus() {
-    final isAvailable = product.status == 'Available';
+    final isAvailable = _product.status == 'Available';
 
     return Row(
       children: [
@@ -134,7 +179,7 @@ class ProductDetailScreen extends StatelessWidget {
         ),
         const SizedBox(width: AppSpacing.sm),
         Text(
-          product.status,
+          _product.status,
           style: TextStyle(
             color: isAvailable
                 ? AppColors.success
@@ -161,19 +206,19 @@ class ProductDetailScreen extends StatelessWidget {
             const SizedBox(height: AppSpacing.lg),
             _buildDetailRow(
               label: 'Inventory ID',
-              value: product.id,
+              value: _product.id,
             ),
             _buildDetailRow(
               label: 'Category',
-              value: product.category,
+              value: _product.category,
             ),
             _buildDetailRow(
               label: 'Manufacturer',
-              value: product.manufacturer,
+              value: _product.manufacturer,
             ),
             _buildDetailRow(
               label: 'Model',
-              value: product.model,
+              value: _product.model,
             ),
           ],
         ),

@@ -60,7 +60,26 @@ class InventoryController extends ChangeNotifier {
   }
 
   void addProduct(Product product) {
-  MockInventory.items.add(product);
-  notifyListeners();
-}
+    MockInventory.items.add(product);
+    notifyListeners();
+  }
+
+  void updateProduct(Product updatedProduct) {
+    final index = MockInventory.items.indexWhere(
+      (product) => product.id == updatedProduct.id,
+    );
+
+    if (index == -1) return;
+
+    MockInventory.items[index] = updatedProduct;
+    notifyListeners();
+  }
+
+  void deleteProduct(String productId) {
+    MockInventory.items.removeWhere(
+      (product) => product.id == productId,
+    );
+
+    notifyListeners();
+  }
 }
