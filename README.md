@@ -1,7 +1,9 @@
 # armory
 
 link deploy APP: https://armory-pbp.satrioanggito6.workers.dev/
-
+login use this: admin@armory.local
+          pass: armory123 
+          
 A new Flutter project.
 
 ## Getting Started
